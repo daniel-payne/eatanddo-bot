@@ -145,6 +145,24 @@ bot.dialog(GREETING_DIALOG, [
     }
 ]);
 
+// Add dialog to return list of shirts available
+bot.dialog('showShirts', function (session) {
+    var msg = new builder.Message(session);
+    msg.attachmentLayout(builder.AttachmentLayout.carousel)
+    msg.attachments([
+        new builder.HeroCard(session)
+            .title("30 g Chicken")
+            .subtitle("Chicken meat, average roasted")
+            .text("204 calories 14g protine 6g Carbs (2 Sug) 8g Fat (6g Sat) ")
+            .buttons([
+                builder.CardAction.imBack(session, "change weight of 30g chicken", "Change Weight"),
+                builder.CardAction.imBack(session, "change nutritiona information for 30g chicken", "Choose a different food")
+            ]),
+
+    ]);
+    session.send(msg).endDialog();
+}).triggerAction({ matches: /^(show|list)/i })
+
 app.post('/api/messages', connector.listen());
 
 app.listen(portHTTP, function () {
