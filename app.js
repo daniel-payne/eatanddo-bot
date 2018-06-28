@@ -27,7 +27,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.text());
 
 
-app.get('/', function (req, res) {
+app.get('/test', function (req, res) {
   res.send('{"serverTime": "' + (new Date()).toISOString().slice(0, 19) + '"}');
 });
 
@@ -40,33 +40,36 @@ var inMemoryStorage = new builder.MemoryBotStorage();
 
 var GREETING_DIALOG = 'GREETING_DIALOG'
 
-// This is a dinner reservation bot that uses a waterfall technique to prompt users for input.
 var bot = new builder.UniversalBot(connector, [
     (session) => {
-        session.send("Welcom to nutrition calculator, I can calculate the calories for your meal.");
-        session.privateConversationData.scratchPad = { }
-        builder.Prompts.text(session, "For example say 'Today's breakfast was 50g of rye bread 15 grams of peanut butter and 5grams of butter?");
+        builder.Prompts.text(session, "Welcom to nutrition calculator, I can calculate the calories for your meal. \n For example say 'Today's breakfast was 50g of rye bread 15 grams of peanut butter and 5grams of butter?");
     },
     (session, results) => {
       session.beginDialog(GREETING_DIALOG)
     },
     (session, results) => {
-        session.send("You fat bastard");
-        session.sendTyping()
-        //session.endConversation();
-      },
-]).set('storage', inMemoryStorage); // Register in-memory storage 
+      session.sendTyping()
+      
+      setTimeout(() =>{ 
+        session.send("The Government doesn't want you to be fat!");
+        session.endConversation();          
+      }, 3000);
+    },
+]).set('storage', inMemoryStorage); 
 
 bot.dialog(GREETING_DIALOG, [
     (session, args) => { 
+        const newText = session.message.text;        
         const oldData = session.privateConversationData.scratchPad;      
-        const newData = extractEntryData(session.message.text);
+        const newData = extractEntryData(newText);
 
-        if (oldData.lines) {
-          newData.lines = [...oldData.lines, ...newData.lines];
+        if (newText !== 'no' && newText !== 'yes' ){
+            if (oldData && oldData.lines) {
+                newData.lines = [...oldData.lines, ...newData.lines];
+              }
+      
+              session.privateConversationData.scratchPad = Object.assign({}, oldData, newData);
         }
-
-        session.privateConversationData.scratchPad = Object.assign({}, oldData, newData);
 
         if(args && args.reprompt){
             session.send("What else would you like to add ?");
