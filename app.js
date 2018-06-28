@@ -2,11 +2,14 @@ var express    = require('express');
 var app        = express();
 var bodyParser = require('body-parser');
 
+const fetch = require('node-fetch')
+
 var builder = require('botbuilder');
 
 var {entryDataRecognizer} = require('./entryDataRecognizer');
 
-var portHTTP = process.env.port || 1337;
+var portHTTP = process.env.port || 3854;
+
 
 var allowCrossDomain = function (req, res, next) {
 
@@ -42,7 +45,12 @@ var GREETING_DIALOG = 'GREETING_DIALOG'
 
 var bot = new builder.UniversalBot(connector, [
     (session) => {
-        builder.Prompts.text(session, "Welcom to nutrition calculator, I can calculate the calories for your meal. \n For example say 'Today's breakfast was 50g of rye bread 15 grams of peanut butter and 5grams of butter?");
+      builder.Prompts.text(session, 
+`### Welcom to nutrition calculator 
+I can calculate the calories for your meal. 
+For example say 
+> Today's breakfast was 50g of rye bread 15 grams of peanut butter and 5grams of butter?`
+     );
     },
     (session, results) => {
       session.beginDialog(GREETING_DIALOG)
@@ -78,7 +86,7 @@ bot.dialog(GREETING_DIALOG, [
         }        
         
     },
-    (session, results) => {
+    (session, results, next) => {
         const response = results ? results.response.toUpperCase() : null;
 
         if (response === 'YES'){
@@ -86,16 +94,45 @@ bot.dialog(GREETING_DIALOG, [
             const x =JSON.stringify(session.privateConversationData.scratchPad) ;
 
             session.send("Checking each of your items to see if we have nutritional information"); 
+            session.sendTyping()
 
-            let choices = session.privateConversationData.scratchPad.lines.map(line => {
-                return line.foodText
+            let promises = [];
+
+            let choices = []
+            
+            session.privateConversationData.scratchPad.lines.forEach(line => {
+                promises.push(
+                    fetch(
+                        `https://eatanddo-rest.azurewebsites.net/search/foodnames?match=${line.foodText}&count=${10} `
+                      )
+                        .then(response => {
+                          if (response.status !== 200) {
+                            console.log("ERROR /search/foodnames: " + response.status);
+                            return;
+                          }
+                    
+                          return response.json();
+                        }).catch(err => {
+                            session.send(err)
+                        }) 
+                )
             })
 
-            choices.push('All items are ok')
+            Promise.all(promises).then(results => {
+                results.forEach(result => {
+                    choices.push(result[0].foodName)
+                }) 
 
-            builder.Prompts.choice(session, 'If any of our choices are wrong please click on one to change the food choice', choices, {
-                listStyle: builder.ListStyle.button
-            })
+                choices.push('All items are ok')
+
+                builder.Prompts.choice(session, 'If any of our choices are wrong please click on one to change the food choice', choices, {
+                    listStyle: builder.ListStyle.button
+                })
+
+                next()
+            });
+
+
         } else {
             session.replaceDialog('GREETING_DIALOG', { reprompt: true })
         }
