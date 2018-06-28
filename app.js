@@ -158,9 +158,25 @@ bot.dialog('showShirts', function (session) {
                 builder.CardAction.imBack(session, "change weight of 30g chicken", "Change Weight"),
                 builder.CardAction.imBack(session, "change nutritiona information for 30g chicken", "Choose a different food")
             ]),
+            new builder.HeroCard(session)
+            .title("30 g Chicken")
+            .subtitle("Chicken meat, average roasted")
+            .text("204 calories 14g protine 6g Carbs (2 Sug) 8g Fat (6g Sat) ")
+            .buttons([
+                builder.CardAction.imBack(session, "change weight of 30g chicken", "Change Weight"),
+                builder.CardAction.imBack(session, "change nutritional information for 30g chicken, today's breakfast", "Choose a different food")
+            ]),
+            new builder.HeroCard(session)
+            .title("30 g Chicken")
+            .subtitle("Chicken meat, average roasted")
+            .text("204 calories 14g protine 6g Carbs (2 Sug) 8g Fat (6g Sat) ")
+            .buttons([
+                builder.CardAction.imBack(session, "change weight of 30g chicken", "Change Weight"),
+                builder.CardAction.imBack(session, "change nutritiona information for 30g chicken", "Choose a different food")
+            ]),
 
     ]);
-    session.send(msg).endDialog();
+    session.send('Todays Breakfast').send(msg).send('Todays Lunch').send(msg).endDialog();
 }).triggerAction({ matches: /^(show|list)/i })
 
 app.post('/api/messages', connector.listen());
