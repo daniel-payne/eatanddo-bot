@@ -4,7 +4,7 @@ var bodyParser = require('body-parser');
 
 var builder = require('botbuilder');
 
-var {extractEntryData} = require('./extractEntryData');
+var {entryDataRecognizer} = require('./entryDataRecognizer');
 
 var portHTTP = process.env.port || 1337;
 
@@ -49,7 +49,7 @@ var bot = new builder.UniversalBot(connector, [
     },
     (session, results) => {
       session.sendTyping()
-      
+
       setTimeout(() =>{ 
         session.send("The Government doesn't want you to be fat!");
         session.endConversation();          
@@ -61,7 +61,7 @@ bot.dialog(GREETING_DIALOG, [
     (session, args) => { 
         const newText = session.message.text;        
         const oldData = session.privateConversationData.scratchPad;      
-        const newData = extractEntryData(newText);
+        const newData = entryDataRecognizer(newText);
 
         if (newText !== 'no' && newText !== 'yes' ){
             if (oldData && oldData.lines) {

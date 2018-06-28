@@ -71,7 +71,7 @@ const UNIT_MATCHES = [
 
 const DAYS = 86400000;
 
-function extractEntryData(input) {
+function entryDataRecognizer(input) {
   let output = input;
   let tokens = [];
 
@@ -210,4 +210,4 @@ function extractLinesFromData(input) {
   return output;
 }
 
-module.exports.extractEntryData = extractEntryData;
+module.exports.entryDataRecognizer = entryDataRecognizer;
