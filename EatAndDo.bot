@@ -1,0 +1,15 @@
+{
+    "name": "EatAndDo",
+    "description": "",
+    "secretKey": "",
+    "services": [
+        {
+            "id": "a4b75e80-7952-11e8-b981-25d96cf8ea4b",
+            "name": "EatAndDo",
+            "type": "endpoint",
+            "appId": "",
+            "appPassword": "",
+            "endpoint": "http://localhost:1337/api/messages"
+        }
+    ]
+}
