@@ -41,19 +41,51 @@ var connector = new builder.ChatConnector({
 
 var inMemoryStorage = new builder.MemoryBotStorage();
 
-var GREETING_DIALOG = 'GREETING_DIALOG'
+var ADD_DIALOG = 'ADD_DIALOG'
 
-var bot = new builder.UniversalBot(connector, [
-    (session) => {
-      builder.Prompts.text(session, 
+const WELCOME_MESSAGE =
 `### Welcom to nutrition calculator 
 I can calculate the calories for your meal. 
 For example say 
-> Today's breakfast was 50g of rye bread 15 grams of peanut butter and 5grams of butter?`
-     );
+> ADD 50g of rye bread 15 grams of peanut butter and 5 grams of butter
+
+or to see the nutration breakdown of the items you have added
+
+> SHOW or BREAKDOWN
+
+or to save the meal to your food diary
+
+> SAVE
+
+or to see these options again
+
+> HELP`
+
+const STARTUP_MESSAGE = 
+` ### I dont have any items for Today's Breakfast say somthing like: 
+> ADD 50g of rye bread 15 grams of peanut butter and 5grams of butter`
+
+const DONT_UNDERSTAND_MESSAGE = 
+`Sorry, I am not sure what you mean. Say: HELP to get a list of the things i can do`
+
+var bot = new builder.UniversalBot(connector, [
+    (session) => {
+      session.send(session.message.text)
+      builder.Prompts.text(session, STARTUP_MESSAGE);
     },
-    (session, results) => {
-      session.beginDialog(GREETING_DIALOG)
+    (session) => {
+      const { text } = session.message  
+
+      if (text.substr(0,3).toUpperCase === 'ADD'){
+        session.beginDialog(ADD_DIALOG, text)
+      }
+      else if (Number.isInteger(+text.charAt(0))){
+        session.beginDialog(ADD_DIALOG, text)  
+      } else {
+        session.send(DONT_UNDERSTAND_MESSAGE)
+      }
+
+      
     },
     (session, results) => {
       session.sendTyping()
@@ -65,9 +97,9 @@ For example say
     },
 ]).set('storage', inMemoryStorage); 
 
-bot.dialog(GREETING_DIALOG, [
+bot.dialog(ADD_DIALOG, [
     (session, args) => { 
-        const newText = session.message.text;        
+        const newText = args || session.message.text;        
         const oldData = session.privateConversationData.scratchPad;      
         const newData = entryDataRecognizer(newText);
 
@@ -146,38 +178,77 @@ bot.dialog(GREETING_DIALOG, [
 ]);
 
 // Add dialog to return list of shirts available
-bot.dialog('showShirts', function (session) {
+bot.dialog('showFoods', function (session) {
     var msg = new builder.Message(session);
     msg.attachmentLayout(builder.AttachmentLayout.carousel)
     msg.attachments([
-        new builder.HeroCard(session)
-            .title("30 g Chicken")
-            .subtitle("Chicken meat, average roasted")
-            .text("204 calories 14g protine 6g Carbs (2 Sug) 8g Fat (6g Sat) ")
+        // new builder.HeroCard(session)
+        //     .title("30 g Chicken")
+        //     .subtitle("Chicken meat, average roasted")
+        //     .text("204 calories 14g protine 6g Carbs (2 Sug) 8g Fat (6g Sat) ")
+        //     .buttons([
+        //         builder.CardAction.imBack(session, "change weight of 30g chicken", "Change Weight"),
+        //         builder.CardAction.imBack(session, "change nutritiona information for 30g chicken", "Choose a different food")
+        //     ]),
+        //     new builder.HeroCard(session)
+        //     .title("30 g Chicken")
+        //     .subtitle("Chicken meat, average roasted")
+        //     .text("204 calories 14g protine 6g Carbs (2 Sug) 8g Fat (6g Sat) ")
+        //     .buttons([
+        //         builder.CardAction.imBack(session, "change weight of 30g chicken", "Change Weight"),
+        //         builder.CardAction.imBack(session, "change nutritional information for 30g chicken, today's breakfast", "Choose a different food")
+        //     ]),
+        //     new builder.HeroCard(session)
+        //     .title("30 g Chicken")
+        //     .subtitle("Chicken meat, average roasted")
+        //     .text("204 calories 14g protine 6g Carbs (2 Sug) 8g Fat (6g Sat) ")
+        //     .buttons([
+        //         builder.CardAction.imBack(session, "change weight of 30g chicken", "Change Weight"),
+        //         builder.CardAction.imBack(session, "change nutritiona information for 30g chicken", "Choose a different food")
+        //     ]),
+            new builder.ReceiptCard(session)
+            .title("Breakfast")
+            .facts([
+                builder.Fact.create(session, 'Calories',           '1342'),
+                builder.Fact.create(session, 'Carbs',              '12.6')
+            ])
             .buttons([
-                builder.CardAction.imBack(session, "change weight of 30g chicken", "Change Weight"),
-                builder.CardAction.imBack(session, "change nutritiona information for 30g chicken", "Choose a different food")
-            ]),
-            new builder.HeroCard(session)
-            .title("30 g Chicken")
-            .subtitle("Chicken meat, average roasted")
-            .text("204 calories 14g protine 6g Carbs (2 Sug) 8g Fat (6g Sat) ")
-            .buttons([
-                builder.CardAction.imBack(session, "change weight of 30g chicken", "Change Weight"),
-                builder.CardAction.imBack(session, "change nutritional information for 30g chicken, today's breakfast", "Choose a different food")
-            ]),
-            new builder.HeroCard(session)
-            .title("30 g Chicken")
-            .subtitle("Chicken meat, average roasted")
-            .text("204 calories 14g protine 6g Carbs (2 Sug) 8g Fat (6g Sat) ")
-            .buttons([
-                builder.CardAction.imBack(session, "change weight of 30g chicken", "Change Weight"),
-                builder.CardAction.imBack(session, "change nutritiona information for 30g chicken", "Choose a different food")
-            ]),
+                builder.CardAction.postBack(session, 'BREAKDOWN', 'Show BREAKDOWN'),
+            ])
+
 
     ]);
-    session.send('Todays Breakfast').send(msg).send('Todays Lunch').send(msg).endDialog();
+    session.send('Todays Breakfast').send(msg).endDialog();
 }).triggerAction({ matches: /^(show|list)/i })
+
+
+
+bot.dialog('HELP', function (session) {    
+    session.userData.firstRun = true;
+    session.send(WELCOME_MESSAGE).endDialog();
+}).triggerAction({ matches: /^HELP/i });
+
+bot.dialog('firstRun', function (session) {    
+    session.userData.firstRun = true;
+    session.send(WELCOME_MESSAGE).endDialog();
+}).triggerAction({
+    onFindAction: function (context, callback) {
+        if (!context.userData.firstRun) {
+            callback(null, 1.1);
+        } else {
+            callback(null, 0.0);
+        }
+    }
+});
+
+// bot.on('conversationUpdate', function (message) {
+//     if (message.membersAdded && message.membersAdded.length > 0) {
+//         var reply = new builder.Message()
+//                 .address(message.address)
+//                 .text(WELCOME_MESSAGE);
+//         bot.send(reply);
+//     }  
+// });
 
 app.post('/api/messages', connector.listen());
 
