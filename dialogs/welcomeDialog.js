@@ -1,4 +1,4 @@
-const builder = require('botbuilder');
+// const builder = require('botbuilder')
 
 const WELCOME_MESSAGE =
 `### Welcom to nutrition calculator 
@@ -22,8 +22,8 @@ module.exports.WELCOME_DIALOG = 'WELCOME_DIALOG'
 module.exports.HELP_DIALOG    = 'HELP_DIALOG'
 
 module.exports.welcomeDialog = [
-    (session) => {    
-        session.userData.firstRun = true;
-        session.send(WELCOME_MESSAGE).endDialog();
-    }   
+  (session) => {    
+    session.userData.firstRun = true
+    session.send(WELCOME_MESSAGE).endDialog()
+  }   
 ]

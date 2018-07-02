@@ -1,0 +1,51 @@
+{
+  "name": "eatanddo-bot",
+  "version": "1.0.0",
+  "description": "Eat and Do Food Diary bot",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daniel-payne/eatanddo-bot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daniel-payne/eatanddo-bot/issues"
+  },
+  "homepage": "https://github.com/daniel-payne/eatanddo-bot#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "botbuilder": "^3.15.0",
+    "express": "^4.16.3",
+    "node-fetch": "^2.1.2",
+    "node-promise": "^0.5.13"
+  },
+  "eslintConfig": {
+    "extends": "eslint:recommended",
+    "env": {
+      "node": true,
+      "browser": false,
+      "commonjs": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 6
+    },
+    "rules": {
+      "indent": [
+        "error",
+        2
+      ],
+      "quotes": [
+        "error",
+        "single"
+      ],
+      "semi": [
+        "error",
+        "never"
+      ]
+    }
+  }
+}
